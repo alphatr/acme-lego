@@ -10,7 +10,7 @@ import (
 	"alphatr.com/acme-lego/src/client"
 	"alphatr.com/acme-lego/src/config"
 	"github.com/urfave/cli"
-	"github.com/xenolf/lego/acme"
+	acme "github.com/xenolf/lego/acmev2"
 )
 
 const (

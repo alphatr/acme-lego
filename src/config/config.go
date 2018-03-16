@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/xenolf/lego/acme"
+	acme "github.com/xenolf/lego/acmev2"
 )
 
 type domainJSON struct {
@@ -24,6 +24,7 @@ type rootJSON struct {
 	KeyType     []string              `json:"key-type"`
 	Challenge   string                `json:"challenge"`
 	DomainGroup map[string]domainJSON `json:"domain-group"`
+	AcmeURL     string                `json:"acme-url"`
 }
 
 type DomainConfig struct {
@@ -83,9 +84,13 @@ func InitConfig(rootPath string) error {
 	Config.DomainGroup = domainGroup
 	Config.HTTPTimeout = 30
 	Config.DNSTimeout = 10
-	Config.AcmeURL = "https://acme-v01.api.letsencrypt.org/directory"
-	Config.RootPath = rootPath
+	if len(jsonConfig.AcmeURL) > 0 {
+		Config.AcmeURL = jsonConfig.AcmeURL
+	} else {
+		Config.AcmeURL = "https://acme-v02.api.letsencrypt.org/directory"
+	}
 
+	Config.RootPath = rootPath
 	return nil
 }
 

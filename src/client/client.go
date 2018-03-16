@@ -10,14 +10,20 @@ import (
 
 	"alphatr.com/acme-lego/src/account"
 	"alphatr.com/acme-lego/src/config"
-	"github.com/xenolf/lego/acme"
+	acme "github.com/xenolf/lego/acmev2"
 	"github.com/xenolf/lego/providers/http/webroot"
 )
+
+type certFilePath struct {
+	Cert   string
+	Prev   string
+	Meta   string
+	Issuer string
+}
 
 func Run(key string, acc *account.Account, domainConf *config.DomainConfig) error {
 	mainConf := config.Config
 
-	fmt.Printf("%#v\n", domainConf.KeyType)
 	for _, keyType := range domainConf.KeyType {
 		cli, err := acme.NewClient(mainConf.AcmeURL, acc, keyType)
 		if err != nil {
@@ -69,19 +75,15 @@ func checkFolder(path string) error {
 }
 
 func saveCertRes(certRes acme.CertificateResource, certPath string, keyType acme.KeyType) error {
-	keyTypeString := strings.ToLower(string(keyType))
-	certOut := path.Join(certPath, keyTypeString+".crt")
-	privOut := path.Join(certPath, keyTypeString+".key")
-	metaOut := path.Join(certPath, keyTypeString+".json")
-	issuerOut := path.Join(certPath, keyTypeString+".issuer.crt")
+	certFiles := generateFilePath(certPath, keyType)
 
-	err := ioutil.WriteFile(certOut, certRes.Certificate, 0600)
+	err := ioutil.WriteFile(certFiles.Cert, certRes.Certificate, 0600)
 	if err != nil {
 		return fmt.Errorf("[%s] Save Certificate Error: %s", certRes.Domain, err.Error())
 	}
 
 	if certRes.IssuerCertificate != nil {
-		err = ioutil.WriteFile(issuerOut, certRes.IssuerCertificate, 0600)
+		err = ioutil.WriteFile(certFiles.Issuer, certRes.IssuerCertificate, 0600)
 		if err != nil {
 			return fmt.Errorf("[%s] Save IssuerCertificate Error: %s", certRes.Domain, err.Error())
 		}
@@ -89,7 +91,7 @@ func saveCertRes(certRes acme.CertificateResource, certPath string, keyType acme
 
 	// 提供 CSR 就不知道私钥了
 	if certRes.PrivateKey != nil {
-		err = ioutil.WriteFile(privOut, certRes.PrivateKey, 0600)
+		err = ioutil.WriteFile(certFiles.Prev, certRes.PrivateKey, 0600)
 		if err != nil {
 			return fmt.Errorf("[%s] Unable to save PrivateKey: %s", certRes.Domain, err.Error())
 		}
@@ -100,10 +102,29 @@ func saveCertRes(certRes acme.CertificateResource, certPath string, keyType acme
 		return fmt.Errorf("[%s] Unable to marshal CertResource: %s", certRes.Domain, err.Error())
 	}
 
-	err = ioutil.WriteFile(metaOut, jsonBytes, 0600)
+	err = ioutil.WriteFile(certFiles.Meta, jsonBytes, 0600)
 	if err != nil {
 		return fmt.Errorf("[%s] Unable to save CertResource: %s", certRes.Domain, err.Error())
 	}
 
 	return nil
+}
+
+func generateFilePath(certPath string, keyType acme.KeyType) *certFilePath {
+	keyTypeMap := map[string]string{
+		"p256": "ecdsa-256",
+		"p384": "ecdsa-384",
+		"2048": "rsa-2048",
+		"4096": "rsa-4096",
+		"8192": "rsa-8192",
+	}
+
+	keyTStr := keyTypeMap[strings.ToLower(string(keyType))]
+
+	return &certFilePath{
+		Cert:   path.Join(certPath, fmt.Sprintf("fullchain.%s.crt", keyTStr)),
+		Prev:   path.Join(certPath, fmt.Sprintf("privkey.%s.key", keyTStr)),
+		Meta:   path.Join(certPath, fmt.Sprintf("meta.%s.json", keyTStr)),
+		Issuer: path.Join(certPath, fmt.Sprintf("issuer.%s.crt", keyTStr)),
+	}
 }

@@ -8,9 +8,10 @@ import (
 	"os"
 	"path"
 
+	acme "github.com/xenolf/lego/acmev2"
+
 	"alphatr.com/acme-lego/src/config"
 	"alphatr.com/acme-lego/src/misc"
-	"github.com/xenolf/lego/acme"
 )
 
 type Account struct {
@@ -83,18 +84,13 @@ func CreateAccount(email string, rootPath string) (*Account, error) {
 		return nil, fmt.Errorf("Init Client Error: %s", err.Error())
 	}
 
-	reg, err := cli.Register()
+	reg, err := cli.Register(true)
 	if err != nil {
 		return nil, fmt.Errorf("Could not complete registration: %s", err.Error())
 	}
 
 	acc.Registration = reg
 	fmt.Println("Registration Success")
-
-	if acc.Registration.Body.Agreement == "" {
-		handleTOS(cli, acc)
-	}
-
 	acc.Save()
 	return acc, nil
 }
@@ -119,12 +115,4 @@ func (acc Account) Save() error {
 
 	accountFile := path.Join(acc.path, "account.json")
 	return ioutil.WriteFile(accountFile, jsonBytes, 0600)
-}
-
-func handleTOS(client *acme.Client, acc *Account) {
-	err := client.AgreeToTOS()
-	if err != nil {
-		fmt.Printf("Could not agree to TOS: %s", err.Error())
-		return
-	}
 }

@@ -2,141 +2,10 @@
 
 
 [[projects]]
-  name = "cloud.google.com/go"
-  packages = ["compute/metadata"]
-  revision = "050b16d2314d5fc3d4c9a51e4cd5c7468e77f162"
-  version = "v0.17.0"
-
-[[projects]]
-  name = "github.com/Azure/azure-sdk-for-go"
-  packages = ["arm/dns"]
-  revision = "eae258195456be76b2ec9ad2ee2ab63cdda365d9"
-  version = "v12.2.0-beta"
-
-[[projects]]
-  name = "github.com/Azure/go-autorest"
-  packages = ["autorest","autorest/adal","autorest/azure","autorest/date","autorest/to"]
-  revision = "6311d7a76f54cf2b6dea03d737d9bd9a6022ac5f"
-  version = "v9.7.1"
-
-[[projects]]
-  name = "github.com/JamesClonk/vultr"
-  packages = ["lib"]
-  revision = "fa1c0367800db75e4d10d0ec90c49a8731670224"
-  version = "1.15.0"
-
-[[projects]]
-  name = "github.com/aws/aws-sdk-go"
-  packages = ["aws","aws/awserr","aws/awsutil","aws/client","aws/client/metadata","aws/corehandlers","aws/credentials","aws/credentials/ec2rolecreds","aws/credentials/endpointcreds","aws/credentials/stscreds","aws/defaults","aws/ec2metadata","aws/endpoints","aws/request","aws/session","aws/signer/v4","internal/shareddefaults","private/protocol","private/protocol/query","private/protocol/query/queryutil","private/protocol/rest","private/protocol/restxml","private/protocol/xml/xmlutil","service/route53","service/sts"]
-  revision = "726cba4d63d34a7055809986b7942c3eae6c4eb2"
-  version = "v1.12.60"
-
-[[projects]]
-  name = "github.com/davecgh/go-spew"
-  packages = ["spew"]
-  revision = "346938d642f2ec3594ed81d874461961cd0faa76"
-  version = "v1.1.0"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/decker502/dnspod-go"
-  packages = ["."]
-  revision = "f33a2c6040fc2550a631de7b3a53bddccdcd73fb"
-
-[[projects]]
-  name = "github.com/dgrijalva/jwt-go"
-  packages = ["."]
-  revision = "dbeaa9332f19a944acb5736b4456cfcc02140e29"
-  version = "v3.1.0"
-
-[[projects]]
-  name = "github.com/dnsimple/dnsimple-go"
-  packages = ["dnsimple"]
-  revision = "9641549ef4d560b09b6f44d9f394af0efcb438ee"
-  version = "v0.15.0"
-
-[[projects]]
-  name = "github.com/edeckers/auroradnsclient"
-  packages = [".","records","requests","requests/errors","tokens","zones"]
-  revision = "1563e622aaca0a8bb895a448f31d4a430ab97586"
-  version = "v1.0.3"
-
-[[projects]]
-  name = "github.com/exoscale/egoscale"
-  packages = ["."]
-  revision = "4721ddd01e081a330d0c0678e7889b6ee505809d"
-  version = "v0.9.0"
-
-[[projects]]
-  name = "github.com/go-ini/ini"
-  packages = ["."]
-  revision = "32e4c1e6bc4e7d0d8451aa6b75200d19e37a536a"
-  version = "v1.32.0"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/golang/protobuf"
-  packages = ["proto"]
-  revision = "1e59b77b52bf8e4b449a57e6f79f21226d571845"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/google/go-querystring"
-  packages = ["query"]
-  revision = "53e6ce116135b80d037921a7fdd5138cf32d7a8a"
-
-[[projects]]
-  name = "github.com/jmespath/go-jmespath"
-  packages = ["."]
-  revision = "0b12d6b5"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/juju/ratelimit"
-  packages = ["."]
-  revision = "59fac5042749a5afb9af70e813da1dd5474f0167"
-
-[[projects]]
   name = "github.com/miekg/dns"
   packages = ["."]
-  revision = "5ec25f2a5044291b6c8abf43ed8a201da241e69e"
-  version = "v1.0.3"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/ovh/go-ovh"
-  packages = ["ovh"]
-  revision = "02f7e9439689eda7ce4752c7f37e50cb678f2679"
-
-[[projects]]
-  name = "github.com/pmezard/go-difflib"
-  packages = ["difflib"]
-  revision = "792786c7400a136282c1664665ae0a8db921c6c2"
-  version = "v1.0.0"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/rainycape/memcache"
-  packages = ["."]
-  revision = "1031fa0ce2f20c1c0e1e1b51951d8ea02c84fa05"
-
-[[projects]]
-  name = "github.com/sirupsen/logrus"
-  packages = ["."]
-  revision = "d682213848ed68c0a260ca37d6dd5ace8423f5ba"
+  revision = "5364553f1ee9cddc7ac8b62dce148309c386695b"
   version = "v1.0.4"
-
-[[projects]]
-  name = "github.com/stretchr/testify"
-  packages = ["assert"]
-  revision = "b91bfb9ebec76498946beb6af7c0230c7cc7ba6c"
-  version = "v1.2.0"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/timewasted/linode"
-  packages = [".","dns"]
-  revision = "37e84520dcf74488f67654f9c775b9752c232dc1"
 
 [[projects]]
   name = "github.com/urfave/cli"
@@ -145,64 +14,22 @@
   version = "v1.20.0"
 
 [[projects]]
+  branch = "acmev2"
   name = "github.com/xenolf/lego"
-  packages = [".","acme","providers/dns","providers/dns/auroradns","providers/dns/azure","providers/dns/cloudflare","providers/dns/digitalocean","providers/dns/dnsimple","providers/dns/dnsmadeeasy","providers/dns/dnspod","providers/dns/dyn","providers/dns/exoscale","providers/dns/gandi","providers/dns/googlecloud","providers/dns/linode","providers/dns/namecheap","providers/dns/ns1","providers/dns/otc","providers/dns/ovh","providers/dns/pdns","providers/dns/rackspace","providers/dns/rfc2136","providers/dns/route53","providers/dns/vultr","providers/http/memcached","providers/http/webroot"]
-  revision = "67c86d860a797ce2483f50d9174d4ed24984bef2"
-  version = "v0.4.1"
+  packages = ["acme","providers/http/webroot"]
+  revision = "a149e7d6506feb4003da7093cbf818c6b75ed4a4"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/crypto"
-  packages = ["ed25519","ed25519/internal/edwards25519","ocsp","ssh/terminal"]
-  revision = "5f55bce93ad2c89f411e009659bb1fd83da36e7b"
+  packages = ["ed25519","ed25519/internal/edwards25519","ocsp"]
+  revision = "374053ea96cb300f8671b8d3b07edeeb06e203b4"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
-  packages = ["bpf","context","context/ctxhttp","idna","internal/iana","internal/socket","ipv4","ipv6","publicsuffix"]
-  revision = "5ccada7d0a7ba9aeb5d3aca8d3501b4c2a509fec"
-
-[[projects]]
-  branch = "master"
-  name = "golang.org/x/oauth2"
-  packages = [".","google","internal","jws","jwt"]
-  revision = "30785a2c434e431ef7c507b54617d6a951d5f2b4"
-
-[[projects]]
-  branch = "master"
-  name = "golang.org/x/sys"
-  packages = ["unix","windows"]
-  revision = "810d7000345868fc619eb81f46307107118f4ae1"
-
-[[projects]]
-  branch = "master"
-  name = "golang.org/x/text"
-  packages = ["collate","collate/build","internal/colltab","internal/gen","internal/tag","internal/triegen","internal/ucd","language","secure/bidirule","transform","unicode/bidi","unicode/cldr","unicode/norm","unicode/rangetable"]
-  revision = "e19ae1496984b1c655b8044a65c0300a3c878dd3"
-
-[[projects]]
-  branch = "master"
-  name = "google.golang.org/api"
-  packages = ["dns/v1","gensupport","googleapi","googleapi/internal/uritemplates"]
-  revision = "37df4fabefb044819e927f44b8487d4cd926d06c"
-
-[[projects]]
-  name = "google.golang.org/appengine"
-  packages = [".","internal","internal/app_identity","internal/base","internal/datastore","internal/log","internal/modules","internal/remote_api","internal/urlfetch","urlfetch"]
-  revision = "150dc57a1b433e64154302bdc40b6bb8aefa313a"
-  version = "v1.0.0"
-
-[[projects]]
-  name = "gopkg.in/ini.v1"
-  packages = ["."]
-  revision = "32e4c1e6bc4e7d0d8451aa6b75200d19e37a536a"
-  version = "v1.32.0"
-
-[[projects]]
-  branch = "v2"
-  name = "gopkg.in/ns1/ns1-go.v2"
-  packages = ["rest","rest/model/account","rest/model/data","rest/model/dns","rest/model/filter","rest/model/monitor"]
-  revision = "3c1c487855f28eb70a438d6600d0ddf248785f4b"
+  packages = ["bpf","internal/iana","internal/socket","ipv4","ipv6"]
+  revision = "24dd3780ca4f75fed9f321890729414a4b5d3f13"
 
 [[projects]]
   name = "gopkg.in/square/go-jose.v1"
@@ -213,6 +40,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "d84b149301974b6534c6ff3a1a33b27c9b60e138d62a7c9a9d98d7c1fa6d894b"
+  inputs-digest = "593c8f037a3cd745a526914844a558541968b0b368600ccd71769c593b35017d"
   solver-name = "gps-cdcl"
   solver-version = 1
