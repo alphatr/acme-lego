@@ -26,28 +26,28 @@ func GetAccount(rootPath string) (*Account, error) {
 
 	accKeyPath := path.Join(accountPath, "account.key")
 	if _, err := os.Stat(accKeyPath); os.IsNotExist(err) {
-		return nil, fmt.Errorf("Account key file is not exist: %s", accKeyPath)
+		return nil, fmt.Errorf("key file is not exist[%s]", accKeyPath)
 	}
 
 	privateKey, err := misc.LoadPrivateKey(accKeyPath)
 	if err != nil {
-		return nil, fmt.Errorf("Could not load private key from file %s: %s", accKeyPath, err.Error())
+		return nil, fmt.Errorf("load-private-key[%s]: %s", accKeyPath, err.Error())
 	}
 
 	accountFile := path.Join(accountPath, "account.json")
 	if _, err := os.Stat(accountFile); os.IsNotExist(err) {
-		return nil, fmt.Errorf("Account file doesn't exist %s: %s", accountFile, err.Error())
+		return nil, fmt.Errorf("account file is not exist[%s]", accountFile)
 	}
 
 	fileBytes, err := ioutil.ReadFile(accountFile)
 	if err != nil {
-		return nil, fmt.Errorf("Could not load file for account %s: %s", accountFile, err.Error())
+		return nil, fmt.Errorf("read-file[%s]: %s", accountFile, err.Error())
 	}
 
 	var account Account
 	err = json.Unmarshal(fileBytes, &account)
 	if err != nil {
-		return nil, fmt.Errorf("Could not parse file for account %s: %s", accountFile, err.Error())
+		return nil, fmt.Errorf("unmarshal-json[%s]: %s", accountFile, err.Error())
 	}
 
 	account.path = accountPath
@@ -60,17 +60,17 @@ func CreateAccount(email string, rootPath string) (*Account, error) {
 
 	accKeyPath := path.Join(accountPath, "account.key")
 	if _, err := os.Stat(accKeyPath); err == nil || os.IsExist(err) {
-		return nil, fmt.Errorf("Account key file is exist, please delete it: %s", accKeyPath)
+		return nil, fmt.Errorf("account key file is exist, please delete it. [%s]", accKeyPath)
 	}
 
 	accountFile := path.Join(accountPath, "account.json")
 	if _, err := os.Stat(accountFile); err == nil || os.IsExist(err) {
-		return nil, fmt.Errorf("Account file is exist, please delete it %s: %s", accountFile, err.Error())
+		return nil, fmt.Errorf("account file is exist, please delete it. [%s]", accountFile)
 	}
 
 	privateKey, err := misc.GeneratePrivateKey(accKeyPath)
 	if err != nil {
-		return nil, fmt.Errorf("Could not generate private key for path %s: %s", accKeyPath, err.Error())
+		return nil, fmt.Errorf("generate-privatekey[%s]: %s", accKeyPath, err.Error())
 	}
 
 	acc := &Account{
@@ -81,18 +81,16 @@ func CreateAccount(email string, rootPath string) (*Account, error) {
 
 	cli, err := acme.NewClient(config.Config.AcmeURL, acc, acme.RSA2048)
 	if err != nil {
-		return nil, fmt.Errorf("Init Client Error: %s", err.Error())
+		return nil, fmt.Errorf("init-client: %s", err.Error())
 	}
 
 	reg, err := cli.Register(true)
 	if err != nil {
-		return nil, fmt.Errorf("Could not complete registration: %s", err.Error())
+		return nil, fmt.Errorf("cli-register: %s", err.Error())
 	}
 
 	acc.Registration = reg
-	fmt.Println("Registration Success")
-	acc.Save()
-	return acc, nil
+	return acc, acc.Save()
 }
 
 func (acc Account) GetEmail() string {

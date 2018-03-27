@@ -47,6 +47,17 @@ func main() {
 				},
 			},
 		},
+		{
+			Name:   "renew",
+			Usage:  "执行证书续期",
+			Action: renewClient,
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:  "domain, d",
+					Usage: "获取证书的域名",
+				},
+			},
+		},
 	}
 
 	app.Flags = []cli.Flag{
@@ -66,7 +77,7 @@ func registerAccount(ctx *cli.Context) error {
 
 	err := config.InitConfig(rootPath)
 	if err != nil {
-		return cli.NewExitError(fmt.Sprintf("Init Config Error: %s", err.Error()), 101)
+		return cli.NewExitError(fmt.Sprintf("Error: init-config: %s", err.Error()), 101)
 	}
 
 	conf := config.Config
@@ -76,10 +87,10 @@ func registerAccount(ctx *cli.Context) error {
 
 	acc, err := account.CreateAccount(conf.Email, rootPath)
 	if err != nil {
-		return cli.NewExitError(fmt.Sprintf("Create Account Error: %s", err.Error()), 102)
+		return cli.NewExitError(fmt.Sprintf("Error: create-account: %s", err.Error()), 102)
 	}
 
-	fmt.Printf("%#v\n", acc)
+	fmt.Printf("Success: create-account: %s\n", acc.Registration.URI)
 	return nil
 }
 
@@ -88,7 +99,7 @@ func runClient(ctx *cli.Context) error {
 
 	err := config.InitConfig(rootPath)
 	if err != nil {
-		return cli.NewExitError(fmt.Sprintf("Init Config Error: %s", err.Error()), 201)
+		return cli.NewExitError(fmt.Sprintf("Error: init-config: %s", err.Error()), 201)
 	}
 
 	conf := config.Config
@@ -97,7 +108,7 @@ func runClient(ctx *cli.Context) error {
 
 	acc, err := account.GetAccount(rootPath)
 	if err != nil {
-		return cli.NewExitError(fmt.Sprintf("Get Account Error: %s", err.Error()), 202)
+		return cli.NewExitError(fmt.Sprintf("Error: get-account: %s", err.Error()), 202)
 	}
 
 	keyDomain := ctx.String("domain")
@@ -107,7 +118,7 @@ func runClient(ctx *cli.Context) error {
 		domainConf, ok := conf.DomainGroup[keyDomain]
 		if !ok {
 			if len(httpPath) == 0 {
-				return cli.NewExitError(fmt.Sprintf("Must Need HttpPath: %s", err.Error()), 203)
+				return cli.NewExitError(fmt.Sprintf("Error: http-path-empty: %s", err.Error()), 203)
 			}
 
 			domainConf = &config.DomainConfig{
@@ -120,7 +131,7 @@ func runClient(ctx *cli.Context) error {
 
 		err := client.Run(keyDomain, acc, domainConf)
 		if err != nil {
-			fmt.Printf("[%s] Run Client Error: %s\n", keyDomain, err.Error())
+			return cli.NewExitError(fmt.Sprintf("Error: run-client: %s", err.Error()), 204)
 		}
 
 		return nil
@@ -129,9 +140,54 @@ func runClient(ctx *cli.Context) error {
 	for key, domainConf := range conf.DomainGroup {
 		err := client.Run(key, acc, domainConf)
 		if err != nil {
-			fmt.Printf("[%s] Run Client Error: %s\n", key, err.Error())
+			return cli.NewExitError(fmt.Sprintf("Error: run-client: %s", err.Error()), 205)
 		}
 	}
 
+	fmt.Printf("Success: run-client\n")
+	return nil
+}
+
+func renewClient(ctx *cli.Context) error {
+	rootPath := ctx.Parent().String("path")
+
+	err := config.InitConfig(rootPath)
+	if err != nil {
+		return cli.NewExitError(fmt.Sprintf("Error: init-config: %s", err.Error()), 301)
+	}
+
+	conf := config.Config
+	acme.HTTPClient = http.Client{Timeout: conf.HTTPTimeout * time.Second}
+	acme.DNSTimeout = conf.DNSTimeout * time.Second
+
+	acc, err := account.GetAccount(rootPath)
+	if err != nil {
+		return cli.NewExitError(fmt.Sprintf("Error: get-account: %s", err.Error()), 302)
+	}
+
+	keyDomain := ctx.String("domain")
+
+	if len(keyDomain) > 0 {
+		domainConf, ok := conf.DomainGroup[keyDomain]
+		if !ok {
+			return cli.NewExitError(fmt.Sprintf("Error: get-domain-info: %s", err.Error()), 303)
+		}
+
+		err := client.Renew(keyDomain, acc, domainConf)
+		if err != nil {
+			return cli.NewExitError(fmt.Sprintf("Error: run-client: %s", err.Error()), 304)
+		}
+
+		return nil
+	}
+
+	for key, domainConf := range conf.DomainGroup {
+		err := client.Renew(key, acc, domainConf)
+		if err != nil {
+			return cli.NewExitError(fmt.Sprintf("Error: run-client: %s", err.Error()), 305)
+		}
+	}
+
+	fmt.Printf("Success: renew-client\n")
 	return nil
 }

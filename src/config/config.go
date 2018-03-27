@@ -25,6 +25,7 @@ type rootJSON struct {
 	Challenge   string                `json:"challenge"`
 	DomainGroup map[string]domainJSON `json:"domain-group"`
 	AcmeURL     string                `json:"acme-url"`
+	ExpireDays  int                   `json:"expire-days"`
 }
 
 type DomainConfig struct {
@@ -41,6 +42,7 @@ type MainConfig struct {
 	DNSTimeout  time.Duration
 	AcmeURL     string
 	RootPath    string
+	Expires     time.Duration
 }
 
 var Config MainConfig
@@ -84,6 +86,8 @@ func InitConfig(rootPath string) error {
 	Config.DomainGroup = domainGroup
 	Config.HTTPTimeout = 30
 	Config.DNSTimeout = 10
+	Config.Expires = time.Duration(jsonConfig.ExpireDays) * time.Hour * 24
+
 	if len(jsonConfig.AcmeURL) > 0 {
 		Config.AcmeURL = jsonConfig.AcmeURL
 	} else {
