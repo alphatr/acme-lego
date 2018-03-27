@@ -20,41 +20,46 @@ const (
 func main() {
 	app := cli.NewApp()
 
+	app.Version = "1.0.0"
+	app.Name = "lego"
+	app.Usage = "A Let's Encrypt Client"
+	app.Author = "AlphaTr"
+
 	app.Commands = []cli.Command{
 		{
 			Name:   "reg",
-			Usage:  "注册帐号",
+			Usage:  "create account",
 			Action: registerAccount,
 			Flags: []cli.Flag{
 				cli.StringFlag{
 					Name:  "mail",
-					Usage: "账户邮件",
+					Usage: "account email",
 				},
 			},
 		},
 		{
 			Name:   "run",
-			Usage:  "执行证书获取",
+			Usage:  "run get certificate",
 			Action: runClient,
 			Flags: []cli.Flag{
 				cli.StringFlag{
 					Name:  "domain, d",
-					Usage: "获取证书的域名",
+					Usage: "certificate domain",
 				},
 				cli.StringFlag{
 					Name:  "http-path",
-					Usage: "验证 .well-known/acme-challenge 文件目录",
+					Usage: ".well-known/acme-challenge path",
 				},
 			},
 		},
 		{
 			Name:   "renew",
-			Usage:  "执行证书续期",
+			Usage:  "renew certificate",
 			Action: renewClient,
 			Flags: []cli.Flag{
 				cli.StringFlag{
 					Name:  "domain, d",
-					Usage: "获取证书的域名",
+					Usage: "certificate domain",
 				},
 			},
 		},
