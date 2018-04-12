@@ -20,7 +20,7 @@ const (
 func main() {
 	app := cli.NewApp()
 
-	app.Version = "1.0.0"
+	app.Version = "1.1.0"
 	app.Name = "lego"
 	app.Usage = "A Let's Encrypt Client"
 	app.Author = "AlphaTr"

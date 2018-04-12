@@ -26,6 +26,7 @@ type rootJSON struct {
 	DomainGroup map[string]domainJSON `json:"domain-group"`
 	AcmeURL     string                `json:"acme-url"`
 	ExpireDays  int                   `json:"expire-days"`
+	AfterRenew  string                `json:"after-renew"`
 }
 
 type DomainConfig struct {
@@ -43,6 +44,7 @@ type MainConfig struct {
 	AcmeURL     string
 	RootPath    string
 	Expires     time.Duration
+	AfterRenew  string
 }
 
 var Config MainConfig
@@ -87,6 +89,7 @@ func InitConfig(rootPath string) error {
 	Config.HTTPTimeout = 30
 	Config.DNSTimeout = 10
 	Config.Expires = time.Duration(jsonConfig.ExpireDays) * time.Hour * 24
+	Config.AfterRenew = jsonConfig.AfterRenew
 
 	if len(jsonConfig.AcmeURL) > 0 {
 		Config.AcmeURL = jsonConfig.AcmeURL

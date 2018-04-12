@@ -11,6 +11,7 @@ import (
 
 	"alphatr.com/acme-lego/src/account"
 	"alphatr.com/acme-lego/src/config"
+	"alphatr.com/acme-lego/src/misc"
 	acme "github.com/xenolf/lego/acmev2"
 	"github.com/xenolf/lego/providers/http/webroot"
 )
@@ -138,6 +139,15 @@ func Renew(domainKey string, acc *account.Account, domainConf *config.DomainConf
 		if err != nil {
 			return fmt.Errorf("save-cert-res[%s, %s]: %s", domainKey, keyType, err.Error())
 		}
+	}
+
+	if len(mainConf.AfterRenew) > 0 {
+		result, err := misc.RunCmd(mainConf.AfterRenew)
+		if err != nil {
+			return fmt.Errorf("misc-runcmd: %s", err.Error())
+		}
+
+		fmt.Println(result)
 	}
 
 	return nil
