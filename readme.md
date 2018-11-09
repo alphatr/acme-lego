@@ -43,8 +43,8 @@ CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o bin/lego main.go
 3、建立配置文件后，依次执行
 
 ```bash
-logo reg # 注册账户
-logo run # 执行申请证书
+lego reg # 注册账户
+lego run # 执行申请证书
 ```
 
 就可以将配置的域名申请证书
@@ -52,25 +52,25 @@ logo run # 执行申请证书
 4、也可以在配置文件不存在情况下手动执行
 
 ```bash
-logo reg --email="acme@example.com" # 用传入的邮箱执行账户申请
+lego reg --email="acme@example.com" # 用传入的邮箱执行账户申请
 ```
 
 5、或者忽略配置，为单个域名执行单个证书的申请
 
 ```bash
-logo run --domain="c.example.com" --type ecc # 执行 c.example.com 域名的 ECC 证书申请
+lego run --domain="c.example.com" --type ecc # 执行 c.example.com 域名的 ECC 证书申请
 ```
 
 6、域名续签，由于执行文件没有做为服务在后台守护，所以需要手动添加 crontab 任务定时执行下面命令
 
 ```bash
-logo renew
+lego renew
 ```
 
 或者单个域名续签
 
 ```bash
-logo renew --domain="c.example.com"
+lego renew --domain="c.example.com"
 ```
 
 ##### 配置目录结构
