@@ -2,15 +2,14 @@ package main
 
 import (
 	"fmt"
-	"net/http"
 	"os"
-	"time"
+
+	"github.com/go-acme/lego/v3/certcrypto"
+	"github.com/urfave/cli"
 
 	"alphatr.com/acme-lego/src/account"
 	"alphatr.com/acme-lego/src/client"
 	"alphatr.com/acme-lego/src/config"
-	"github.com/urfave/cli"
-	acme "github.com/xenolf/lego/acmev2"
 )
 
 const (
@@ -108,8 +107,6 @@ func runClient(ctx *cli.Context) error {
 	}
 
 	conf := config.Config
-	acme.HTTPClient = http.Client{Timeout: conf.HTTPTimeout * time.Second}
-	acme.DNSTimeout = conf.DNSTimeout * time.Second
 
 	acc, err := account.GetAccount(rootPath)
 	if err != nil {
@@ -128,7 +125,7 @@ func runClient(ctx *cli.Context) error {
 
 			domainConf = &config.DomainConfig{
 				Domains:   []string{keyDomain},
-				KeyType:   []acme.KeyType{acme.RSA2048},
+				KeyType:   []certcrypto.KeyType{certcrypto.RSA2048},
 				Challenge: "http-file",
 				HTTPPath:  httpPath,
 			}
@@ -162,8 +159,6 @@ func renewClient(ctx *cli.Context) error {
 	}
 
 	conf := config.Config
-	acme.HTTPClient = http.Client{Timeout: conf.HTTPTimeout * time.Second}
-	acme.DNSTimeout = conf.DNSTimeout * time.Second
 
 	acc, err := account.GetAccount(rootPath)
 	if err != nil {

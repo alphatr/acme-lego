@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	acme "github.com/xenolf/lego/acmev2"
+	"github.com/go-acme/lego/v3/certcrypto"
 )
 
 type domainJSON struct {
@@ -29,13 +29,15 @@ type rootJSON struct {
 	AfterRenew  string                `json:"after-renew"`
 }
 
+// DomainConfig 单个域名的配置
 type DomainConfig struct {
 	Domains   []string
-	KeyType   []acme.KeyType
+	KeyType   []certcrypto.KeyType
 	Challenge string
 	HTTPPath  string
 }
 
+// MainConfig 主配置
 type MainConfig struct {
 	Email       string
 	DomainGroup map[string]*DomainConfig
@@ -47,8 +49,10 @@ type MainConfig struct {
 	AfterRenew  string
 }
 
+// Config 主配置
 var Config MainConfig
 
+// InitConfig 配置初始化
 func InitConfig(rootPath string) error {
 	jsonConfig, err := parseJSON(rootPath)
 	if err != nil {
@@ -66,7 +70,7 @@ func InitConfig(rootPath string) error {
 			challenge = jsonConfig.Challenge
 		}
 
-		keyType := []acme.KeyType{acme.RSA2048}
+		keyType := []certcrypto.KeyType{certcrypto.RSA2048}
 		valueKeyType := parseKeyTypes(value.KeyType)
 		if len(valueKeyType) > 0 {
 			keyType = valueKeyType
@@ -121,8 +125,8 @@ func parseJSON(rootPath string) (*rootJSON, error) {
 	return &jsonConfig, nil
 }
 
-func parseKeyTypes(typeString []string) []acme.KeyType {
-	var typeList []acme.KeyType
+func parseKeyTypes(typeString []string) []certcrypto.KeyType {
+	var typeList []certcrypto.KeyType
 	for _, value := range typeString {
 		keyType, ok := stringToKeyType(value)
 		if ok {
@@ -133,22 +137,22 @@ func parseKeyTypes(typeString []string) []acme.KeyType {
 	return typeList
 }
 
-func stringToKeyType(typeString string) (acme.KeyType, bool) {
+func stringToKeyType(typeString string) (certcrypto.KeyType, bool) {
 	typeString = strings.ToUpper(typeString)
 	switch typeString {
 	case "EC256":
-		return acme.EC256, true
+		return certcrypto.EC256, true
 	case "EC384":
-		return acme.EC384, true
+		return certcrypto.EC384, true
 	case "RSA2048":
-		return acme.RSA2048, true
+		return certcrypto.RSA2048, true
 	case "RSA4096":
-		return acme.RSA4096, true
+		return certcrypto.RSA4096, true
 	case "RSA8192":
-		return acme.RSA8192, true
+		return certcrypto.RSA8192, true
 	}
 
-	return acme.RSA2048, false
+	return certcrypto.RSA2048, false
 }
 
 func makeSet(keyDomain string, domainList []string) []string {

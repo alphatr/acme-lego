@@ -9,11 +9,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-acme/lego/v3/certcrypto"
+	"github.com/go-acme/lego/v3/certificate"
+	"github.com/go-acme/lego/v3/lego"
+
 	"alphatr.com/acme-lego/src/account"
 	"alphatr.com/acme-lego/src/config"
 	"alphatr.com/acme-lego/src/misc"
-	acme "github.com/xenolf/lego/acmev2"
-	"github.com/xenolf/lego/providers/http/webroot"
 )
 
 type certFilePath struct {
@@ -23,33 +25,36 @@ type certFilePath struct {
 	Issuer string
 }
 
+// ProviderMap ProviderMap
+var ProviderMap = map[string]func(string, *lego.Client, *config.DomainConfig) error{}
+
 func Run(domainKey string, acc *account.Account, domainConf *config.DomainConfig) error {
 	mainConf := config.Config
 
 	for _, keyType := range domainConf.KeyType {
-		cli, err := acme.NewClient(mainConf.AcmeURL, acc, keyType)
+		cli, err := account.NewClient(acc)
 		if err != nil {
 			return fmt.Errorf("init-client[%s, %s]: %s", domainKey, keyType, err.Error())
 		}
 
-		if domainConf.Challenge == "http-path" {
-			provider, err := webroot.NewHTTPProvider(domainConf.HTTPPath)
-			if err != nil {
-				return fmt.Errorf("init-http-provider[%s, %s]: %s", domainKey, keyType, err.Error())
-			}
-
-			cli.SetChallengeProvider(acme.HTTP01, provider)
+		provider, ok := ProviderMap[domainConf.Challenge]
+		if !ok {
+			return fmt.Errorf("unknow-provider[%s]: %s", domainKey, domainConf.Challenge)
 		}
 
-		if domainConf.Challenge == "http-port" {
-			cli.SetHTTPAddress(":8057")
+		if err := provider(domainKey, cli, domainConf); err != nil {
+			return fmt.Errorf("apply-provider-error[%s, %s]: %s", domainKey, domainConf.Challenge, err.Error())
 		}
 
-		cert, failures := cli.ObtainCertificate(domainConf.Domains, true, nil, true)
-		if len(failures) > 0 {
-			for _, value := range failures {
-				return fmt.Errorf("obtain-certificate[%s, %s]: %s", domainKey, keyType, value.Error())
-			}
+		request := certificate.ObtainRequest{
+			Domains:    domainConf.Domains,
+			Bundle:     true,
+			MustStaple: true,
+		}
+
+		cert, err := cli.Certificate.Obtain(request)
+		if err != nil {
+			return fmt.Errorf("obtain-certificate[%s, %s]: %s", domainKey, keyType, err.Error())
 		}
 
 		certPath := path.Join(mainConf.RootPath, "certificates", domainKey)
@@ -71,22 +76,18 @@ func Renew(domainKey string, acc *account.Account, domainConf *config.DomainConf
 	mainConf := config.Config
 
 	for _, keyType := range domainConf.KeyType {
-		cli, err := acme.NewClient(mainConf.AcmeURL, acc, keyType)
+		cli, err := account.NewClient(acc)
 		if err != nil {
 			return fmt.Errorf("init-client[%s, %s]: %s", domainKey, keyType, err.Error())
 		}
 
-		if domainConf.Challenge == "http-path" {
-			provider, err := webroot.NewHTTPProvider(domainConf.HTTPPath)
-			if err != nil {
-				return fmt.Errorf("init-http-provider[%s, %s]: %s", domainKey, keyType, err.Error())
-			}
-
-			cli.SetChallengeProvider(acme.HTTP01, provider)
+		provider, ok := ProviderMap[domainConf.Challenge]
+		if !ok {
+			return fmt.Errorf("unknow-provider[%s]: %s", domainKey, domainConf.Challenge)
 		}
 
-		if domainConf.Challenge == "http-port" {
-			cli.SetHTTPAddress(":8057")
+		if err := provider(domainKey, cli, domainConf); err != nil {
+			return fmt.Errorf("apply-provider-error[%s, %s]: %s", domainKey, domainConf.Challenge, err.Error())
 		}
 
 		certPath := path.Join(mainConf.RootPath, "certificates", domainKey)
@@ -97,37 +98,31 @@ func Renew(domainKey string, acc *account.Account, domainConf *config.DomainConf
 			return fmt.Errorf("read-cert-file[%s, %s]: %s", domainKey, keyType, err.Error())
 		}
 
-		expTime, err := acme.GetPEMCertExpiration(certBytes)
+		cert, err := certcrypto.ParsePEMCertificate(certBytes)
 		if err != nil {
-			return fmt.Errorf("get-cert-expire[%s, %s]: %s", domainKey, keyType, err.Error())
+			return fmt.Errorf("parse-pem-certificate[%s, %s]: %s", domainKey, keyType, err.Error())
 		}
 
-		if expTime.Sub(time.Now()) > mainConf.Expires {
+		if cert.NotAfter.Sub(time.Now()) > mainConf.Expires {
 			// 时间未到
 			return nil
 		}
-
-		metaBytes, err := ioutil.ReadFile(certFiles.Meta)
-		if err != nil {
-			return fmt.Errorf("read-meta-file[%s, %s]: %s", domainKey, keyType, err.Error())
-		}
-
-		var certRes acme.CertificateResource
-		err = json.Unmarshal(metaBytes, &certRes)
-		if err != nil {
-			return fmt.Errorf("unmarshal-meta-info[%s, %s]: %s", domainKey, keyType, err.Error())
-		}
-		certRes.Certificate = certBytes
 
 		keyBytes, err := ioutil.ReadFile(certFiles.Prev)
 		if err != nil {
 			return fmt.Errorf("read-privatekey-file[%s, %s]: %s", domainKey, keyType, err.Error())
 		}
-		certRes.PrivateKey = keyBytes
 
-		newCert, err := cli.RenewCertificate(certRes, true, true)
+		request := certificate.ObtainRequest{
+			Domains:    domainConf.Domains,
+			PrivateKey: keyBytes,
+			Bundle:     true,
+			MustStaple: true,
+		}
+
+		newCert, err := cli.Certificate.Obtain(request)
 		if err != nil {
-			return fmt.Errorf("renew-certificate[%s, %s]: %s", domainKey, keyType, err.Error())
+			return fmt.Errorf("renew-obtain-certificate[%s, %s]: %s", domainKey, keyType, err.Error())
 		}
 
 		err = checkFolder(certPath)
@@ -160,7 +155,7 @@ func checkFolder(path string) error {
 	return nil
 }
 
-func saveCertRes(certRes acme.CertificateResource, certPath string, keyType acme.KeyType) error {
+func saveCertRes(certRes *certificate.Resource, certPath string, keyType certcrypto.KeyType) error {
 	certFiles := generateFilePath(certPath, keyType)
 
 	err := ioutil.WriteFile(certFiles.Cert, certRes.Certificate, 0600)
@@ -196,7 +191,7 @@ func saveCertRes(certRes acme.CertificateResource, certPath string, keyType acme
 	return nil
 }
 
-func generateFilePath(certPath string, keyType acme.KeyType) *certFilePath {
+func generateFilePath(certPath string, keyType certcrypto.KeyType) *certFilePath {
 	keyTypeMap := map[string]string{
 		"p256": "ecdsa-256",
 		"p384": "ecdsa-384",
