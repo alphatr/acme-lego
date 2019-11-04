@@ -107,7 +107,6 @@ func runClient(ctx *cli.Context) error {
 	}
 
 	conf := config.Config
-
 	acc, err := account.GetAccount(rootPath)
 	if err != nil {
 		return cli.NewExitError(fmt.Sprintf("Error: get-account: %s", err.Error()), 202)
@@ -126,8 +125,8 @@ func runClient(ctx *cli.Context) error {
 			domainConf = &config.DomainConfig{
 				Domains:   []string{keyDomain},
 				KeyType:   []certcrypto.KeyType{certcrypto.RSA2048},
-				Challenge: "http-file",
-				HTTPPath:  httpPath,
+				Challenge: "http-path",
+				Options:   map[string]string{"public": httpPath},
 			}
 		}
 
