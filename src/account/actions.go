@@ -7,6 +7,8 @@ import (
 	"os"
 	"path"
 
+	"github.com/go-acme/lego/v3/registration"
+
 	"alphatr.com/acme-lego/src/misc"
 )
 
@@ -73,7 +75,7 @@ func CreateAccount(email string, rootPath string) (*Account, error) {
 		return nil, fmt.Errorf("init-client: %s", err.Error())
 	}
 
-	reg, err := client.Registration.ResolveAccountByKey()
+	reg, err := client.Registration.Register(registration.RegisterOptions{TermsOfServiceAgreed: true})
 	if err != nil {
 		return nil, fmt.Errorf("cli-register: %s", err.Error())
 	}
