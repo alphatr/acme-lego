@@ -9,30 +9,17 @@ import (
 	"alphatr.com/acme-lego/src/config"
 )
 
-type HTTPPathOptions struct {
-	Public string
-}
-
 func init() {
 	ProviderMap["http-path"] = ApplyHTTPPathProvider
 }
 
+// ApplyHTTPPathProvider 应用 HTTP 路径 Provider
 func ApplyHTTPPathProvider(domain string, cli *lego.Client, conf *config.DomainConfig) error {
-	options := parseOptions(conf.Options)
-	provider, err := webroot.NewHTTPProvider(options.Public)
+	provider, err := webroot.NewHTTPProvider(conf.Options["http-path"])
 	if err != nil {
 		return fmt.Errorf("init-http-provider[%s, %s]: %s", domain, conf.KeyType, err.Error())
 	}
 
 	cli.Challenge.SetHTTP01Provider(provider)
 	return nil
-}
-
-func parseOptions(opt map[string]string) *HTTPPathOptions {
-	options := &HTTPPathOptions{}
-	if publicPath, ok := opt["http-path"]; ok {
-		options.Public = publicPath
-	}
-
-	return options
 }

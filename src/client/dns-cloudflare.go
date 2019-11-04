@@ -13,12 +13,10 @@ func init() {
 	ProviderMap["dns-cloudflare"] = ApplyDNSCloudflareProvider
 }
 
+// ApplyDNSCloudflareProvider 应用 Cloudflare Provider
 func ApplyDNSCloudflareProvider(domain string, cli *lego.Client, conf *config.DomainConfig) error {
 	config := cloudflare.NewDefaultConfig()
-	config.AuthEmail = "CLOUDFLARE_EMAIL"
-	config.AuthKey = "CLOUDFLARE_API_KEY"
-	config.AuthToken = "CLOUDFLARE_DNS_API_TOKEN"
-	config.ZoneToken = "CLOUDFLARE_ZONE_API_TOKEN"
+	config.AuthToken = conf.Options["token"]
 
 	provider, err := cloudflare.NewDNSProviderConfig(config)
 	if err != nil {
