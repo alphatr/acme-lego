@@ -9,13 +9,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-acme/lego/v3/certcrypto"
-	"github.com/go-acme/lego/v3/certificate"
-	"github.com/go-acme/lego/v3/lego"
-
 	"alphatr.com/acme-lego/src/account"
 	"alphatr.com/acme-lego/src/config"
 	"alphatr.com/acme-lego/src/misc"
+
+	"github.com/go-acme/lego/v3/certcrypto"
+	"github.com/go-acme/lego/v3/certificate"
+	"github.com/go-acme/lego/v3/lego"
 )
 
 type certFilePath struct {
@@ -108,14 +108,14 @@ func Renew(domainKey string, acc *account.Account, domainConf *config.DomainConf
 			return nil
 		}
 
-		keyBytes, err := ioutil.ReadFile(certFiles.Prev)
+		privateKey, err := misc.LoadPrivateKey(certFiles.Prev)
 		if err != nil {
-			return fmt.Errorf("read-privatekey-file[%s, %s]: %s", domainKey, keyType, err.Error())
+			return fmt.Errorf("load-private-key[%s, %s]: %s", domainKey, keyType, err.Error())
 		}
 
 		request := certificate.ObtainRequest{
 			Domains:    domainConf.Domains,
-			PrivateKey: keyBytes,
+			PrivateKey: privateKey,
 			Bundle:     true,
 			MustStaple: true,
 		}
