@@ -1,25 +1,26 @@
 kind: pipeline
 type: docker
-name: amd64
-
-platform:
-  arch: amd64
+name: default
 
 steps:
-- name: backend
-  image: golang
+- name: build
+  image: golang:1.14.4
   commands:
     - go mod tidy
-    - go build
-  when:
-    event: tag
+    - mkdir build
+    - env GOOS=darwin GOARCH=amd64 go build -o build/lego-${DRONE_TAG:-latest}-darwin-x64
+    - env GOOS=linux GOARCH=amd64 go build -o build/lego-${DRONE_TAG:-latest}-linux-x64
+    - env GOOS=linux GOARCH=386 go build -o build/lego-${DRONE_TAG:-latest}-linux-x86
+    - env GOOS=linux GOARCH=arm64 go build -o build/lego-${DRONE_TAG:-latest}-linux-arm64
+    - env GOOS=windows GOARCH=amd64 go build -o build/lego-${DRONE_TAG:-latest}-win-x64.exe
+    - env GOOS=windows GOARCH=386 go build -o build/lego-${DRONE_TAG:-latest}-win-x86.exe
 
-steps:
 - name: publish
   image: plugins/github-release
   settings:
     api_key:
       from_secret: github_token
-    files: lego
+    files: build/*
+    title: Release ${DRONE_TAG}
   when:
     event: tag
