@@ -1,0 +1,25 @@
+kind: pipeline
+type: docker
+name: amd64
+
+platform:
+  arch: amd64
+
+steps:
+- name: backend
+  image: golang
+  commands:
+    - go mod tidy
+    - go build
+  when:
+    event: tag
+
+steps:
+- name: publish
+  image: plugins/github-release
+  settings:
+    api_key:
+      from_secret: github_token
+    files: lego
+  when:
+    event: tag
