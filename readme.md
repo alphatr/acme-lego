@@ -1,6 +1,6 @@
 ### acme-lego
 
-Go 版本 ACME 客户端，支持 ACMEv2 协议，支持 ECC 证书
+Go 版本 ACME 客户端，支持 ACMEv2 协议，支持 ECC 证书，支持泛域名证书
 
 ##### 为什么是 Go 版本
 
@@ -8,36 +8,31 @@ Go 版本用来写类似的工具使用起来及其方便，只需将编译后�
 
 ##### 开始使用
 
-1、下载源码，拉取依赖并编译二进制（比较懒，后面会提供编译好的二进制 release 版本供下载）
-
-```bash
-go build -o bin/lego main.go
-CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o bin/lego main.go
-```
+1、下载对应平台的二进制文件 [acme-lego/releases/latest](https://github.com/alphatr/acme-lego/releases/latest) 到可执行目录中(如 Linux 下的 `/usr/local/bin/` 目录)，命名 `lego`
 
 2、建立 Lego 默认配置目录 `/etc/lego/`，或者建立在其他目录的话，后面执行 lego 调用需要传入 path 参数为配置目录（或者说 path 参数默认为 `/etc/lego/` ）
 
-在配置目录下建立 `config.json` 配置文件，如下
+在配置目录下建立 `config.toml` 配置文件，如下
 
-```json
-{
-    "email": "acme@example.com", // 用于账户注册的邮箱
-    "key-type": ["rsa2048", "ec256"], // 全局支持的证书类型，
-    "challenge": "http-path", // 全局支持的验证方式
-    "domain-group": { // 域名配置
-        "a.example.com": { // 验证的域名
-            "domains": ["a12.example.com", "a22.example.com"], // 支持多个域名申请一个证书
-            "key-type": ["rsa2048", "ec256"], // 针对当前域名的证书类型
-            "challenge": "http-path", // 针对当前域名的验证方式
-            "http-path": "/web-path/certificate/acme" // 如果是 http-path 验证，临时文件的位置
-        },
-        "b.example.com": {
-            ...
-        }
-    },
-    "expire-days": 30, // 在临过期多久前执行续签
-    "after-renew": "systemctl reload nginx" // 续签成功后执行的命令
-}
+```toml
+### 基础配置
+email = "acme@example.com" # 用于账户注册的邮箱
+expire-days = 30 # 在临过期多久前执行续签，单位：天
+
+key-type = ["ec256"] # 全局支持的证书类型
+challenge = "http-path" # 全局支持的验证方式
+after-renew = "systemctl reload nginx" # 整体续签成功后执行的命令
+
+# 域名配置
+[domain-group."a.example.com"]
+domains = ["a12.example.com", "a22.example.com"] # 支持多个域名申请一个证书
+challenge = "http-path" # 针对当前域名的验证方式，默认继承全局的参数
+options.public = "/web-path/certificate/acme" # 如果是 http-path 验证，临时文件的位置
+
+[domain-group."b.example.com"]
+domains = ["*.b.example.com"] # 仅 DNS 类型方式支持泛域名证书的配置
+challenge = "dns-cloudflare" # 针对当前域名的验证方式
+options.token = "y-xxxxxxxxxx-xxxxxxxxxxxxxxxx" # dns-cloudflare 方式的 token
 ```
 
 3、建立配置文件后，依次执行
@@ -94,4 +89,4 @@ lego/
 
 ### 感谢
 
-基于 [github.com/xenolf/lego](https://github.com/xenolf/lego) 开发
+基于 [github.com/go-acme/lego](https://github.com/go-acme/lego) 开发
