@@ -90,3 +90,9 @@ lego/
 ### 感谢
 
 基于 [github.com/go-acme/lego](https://github.com/go-acme/lego) 开发
+
+### License
+
+[MIT](https://opensource.org/licenses/MIT)
+
+Copyright (c) 2020-present, AlphaTr
