@@ -20,19 +20,20 @@ jobs:
     - name: Build
       run: |
         go mod tidy
-        mkdir build
-        env GOOS=darwin GOARCH=amd64 go build -o build/lego-${DRONE_TAG:-latest}-darwin-x64
-        env GOOS=linux GOARCH=amd64 go build -o build/lego-${DRONE_TAG:-latest}-linux-x64
-        env GOOS=linux GOARCH=386 go build -o build/lego-${DRONE_TAG:-latest}-linux-x86
-        env GOOS=linux GOARCH=arm64 go build -o build/lego-${DRONE_TAG:-latest}-linux-arm64
-        env GOOS=windows GOARCH=amd64 go build -o build/lego-${DRONE_TAG:-latest}-win-x64.exe
-        env GOOS=windows GOARCH=386 go build -o build/lego-${DRONE_TAG:-latest}-win-x86.exe
+        mkdir release
+        go run build/main.go
+        env GOOS=darwin GOARCH=amd64 go build -o release/lego-${GITHUB_REF##*/}-darwin-x64
+        env GOOS=linux GOARCH=amd64 go build -o release/lego-${GITHUB_REF##*/}-linux-x64
+        env GOOS=linux GOARCH=386 go build -o release/lego-${GITHUB_REF##*/}-linux-x86
+        env GOOS=linux GOARCH=arm64 go build -o release/lego-${GITHUB_REF##*/}-linux-arm64
+        env GOOS=windows GOARCH=amd64 go build -o release/lego-${GITHUB_REF##*/}-win-x64.exe
+        env GOOS=windows GOARCH=386 go build -o release/lego-${GITHUB_REF##*/}-win-x86.exe
 
     - name: Upload
       uses: actions/upload-artifact@v2
       with:
-        name: build
-        path: ./build
+        name: release
+        path: ./release
 
   release:
     name: Release
@@ -50,7 +51,7 @@ jobs:
     - name: "Download"
       uses: actions/download-artifact@v2
       with:
-        name: build
+        name: release
         path: release
 
     - name: "Upload Assets"

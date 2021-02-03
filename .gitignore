@@ -1,6 +1,6 @@
 vendor/
-bin/
-data/
-!data/config.template.json
 test/
-acme-lego
+/config/
+!config/config.template.toml
+/acme-lego
+/version.go

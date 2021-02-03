@@ -1,14 +1,14 @@
-package client
+package challenge
 
 import (
-	"fmt"
 	"net"
 	"net/http"
 	"strings"
 
-	"github.com/go-acme/lego/v3/lego"
+	"github.com/go-acme/lego/v3/challenge"
 
-	"alphatr.com/acme-lego/src/config"
+	"github.com/alphatr/acme-lego/common/config"
+	"github.com/alphatr/acme-lego/common/errors"
 )
 
 // HTTPProviderServer HTTP 端口转发服务器
@@ -20,22 +20,27 @@ type HTTPProviderServer struct {
 }
 
 func init() {
-	ProviderMap["http-port"] = ApplyHTTPPortProvider
+	ProviderMap["http-port"] = &HTTPPortProvider{}
 }
 
-// ApplyHTTPPortProvider 应用 HTTP 端口转发 Provider
-func ApplyHTTPPortProvider(domain string, cli *lego.Client, conf *config.DomainConfig) error {
+// HTTPPortProvider HTTPPortProvider
+type HTTPPortProvider struct {
+}
+
+// Type 返回注册的类型
+func (ins *HTTPPortProvider) Type() []ProviderType {
+	return []ProviderType{ProviderHTTP, ProviderTLS}
+}
+
+// Provider Provider 实体
+func (ins *HTTPPortProvider) Provider(domain string, conf *config.DomainConf) (challenge.Provider, *errors.Error) {
 	host, port, err := net.SplitHostPort(conf.Options["server"])
 	if err != nil {
-		return err
+		return nil, errors.NewError(errors.CommonParseHostPortErrno, err)
 	}
 
-	return cli.Challenge.SetHTTP01Provider(NewHTTPProviderServer(host, port))
-}
-
-// HTTP01ChallengePath Challenge 请求路径
-func HTTP01ChallengePath(token string) string {
-	return "/.well-known/acme-challenge/" + token
+	provider := NewHTTPProviderServer(host, port)
+	return provider, nil
 }
 
 // NewHTTPProviderServer 创建端口转发服务器
@@ -52,7 +57,7 @@ func (s *HTTPProviderServer) Present(domain, token, keyAuth string) error {
 	var err error
 	s.listener, err = net.Listen("tcp", net.JoinHostPort(s.iface, s.port))
 	if err != nil {
-		return fmt.Errorf("Could not start HTTP server for challenge -> %v", err)
+		return errors.NewError(errors.ModelChalServerStartErrno, err)
 	}
 
 	s.done = make(chan bool)

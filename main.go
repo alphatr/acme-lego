@@ -3,190 +3,108 @@ package main
 import (
 	"fmt"
 	"os"
+	"runtime"
 
-	"github.com/go-acme/lego/v3/certcrypto"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 
-	"alphatr.com/acme-lego/src/account"
-	"alphatr.com/acme-lego/src/client"
-	"alphatr.com/acme-lego/src/config"
+	"github.com/alphatr/acme-lego/common/bootstrap"
+	"github.com/alphatr/acme-lego/common/config"
+	"github.com/alphatr/acme-lego/common/errors"
+	"github.com/alphatr/acme-lego/controller/account"
+	"github.com/alphatr/acme-lego/controller/certificate"
 )
 
 const (
-	defaultPath string = "/etc/lego"
+	defaultConfigPath string = "/etc/lego/config.toml"
 )
 
 func main() {
 	app := cli.NewApp()
-
-	app.Version = "1.1.0"
+	cli.VersionPrinter = versionPrinter
+	app.Version = GitVersionTag
 	app.Name = "lego"
 	app.Usage = "A Let's Encrypt Client"
-	app.Author = "AlphaTr"
+	app.Authors = []*cli.Author{{Name: "AlphaTr"}}
 
-	app.Commands = []cli.Command{
+	app.Commands = []*cli.Command{
 		{
 			Name:   "reg",
 			Usage:  "create account",
-			Action: registerAccount,
+			Action: account.Register,
 			Flags: []cli.Flag{
-				cli.StringFlag{
+				&cli.StringFlag{
 					Name:  "mail",
 					Usage: "account email",
 				},
 			},
+			Before: beforeCommand,
 		},
+
 		{
 			Name:   "run",
 			Usage:  "run get certificate",
-			Action: runClient,
+			Action: certificate.Obtain,
 			Flags: []cli.Flag{
-				cli.StringFlag{
-					Name:  "domain, d",
-					Usage: "certificate domain",
+				&cli.StringFlag{
+					Name:    "domain",
+					Aliases: []string{"d"},
+					Usage:   "certificate domain",
 				},
-				cli.StringFlag{
+				&cli.StringFlag{
 					Name:  "http-path",
 					Usage: ".well-known/acme-challenge path",
 				},
 			},
+			Before: beforeCommand,
 		},
+
 		{
 			Name:   "renew",
 			Usage:  "renew certificate",
-			Action: renewClient,
+			Action: certificate.Renew,
 			Flags: []cli.Flag{
-				cli.StringFlag{
-					Name:  "domain, d",
-					Usage: "certificate domain",
+				&cli.StringFlag{
+					Name:    "domain",
+					Aliases: []string{"d"},
+					Usage:   "certificate domain",
 				},
 			},
+			Before: beforeCommand,
 		},
 	}
 
 	app.Flags = []cli.Flag{
-		cli.StringFlag{
-			Name:  "path, p",
-			Value: defaultPath,
-			Usage: "Directory `FILE` to use for storing the data",
+		&cli.StringFlag{
+			Name:    "config",
+			Aliases: []string{"c"},
+			Value:   defaultConfigPath,
+			Usage:   "config `FILE` to use for config",
+			EnvVars: []string{"LEGO_CONFIG"},
 		},
 	}
 
 	app.Run(os.Args)
 }
 
-func registerAccount(ctx *cli.Context) error {
-	rootPath := ctx.Parent().String("path")
-	mail := ctx.String("mail")
+func beforeCommand(ctx *cli.Context) error {
+	configFile := ctx.String("config")
 
-	err := config.InitConfig(rootPath)
-	if err != nil {
-		return cli.NewExitError(fmt.Sprintf("Error: init-config: %s", err.Error()), 101)
+	if err := config.InitConfig(configFile); err != nil {
+		err := errors.NewError(errors.ConfigInitErrno, err)
+		return cli.NewExitError(err.Error(), 101)
 	}
 
-	conf := config.Config
-	if len(mail) > 0 {
-		conf.Email = mail
+	if err := bootstrap.InitBootstrap(); err != nil {
+		err := errors.NewError(errors.BootstrapInitErrno, err)
+		return cli.NewExitError(err.Error(), 102)
 	}
 
-	acc, err := account.CreateAccount(conf.Email, rootPath)
-	if err != nil {
-		return cli.NewExitError(fmt.Sprintf("Error: create-account: %s", err.Error()), 102)
-	}
-
-	fmt.Printf("Success: create-account: %s\n", acc.Registration.URI)
+	config.Config.UserAgent = fmt.Sprintf("alphatr-lego-cli/%s", ctx.App.Version)
 	return nil
 }
 
-func runClient(ctx *cli.Context) error {
-	rootPath := ctx.Parent().String("path")
-
-	err := config.InitConfig(rootPath)
-	if err != nil {
-		return cli.NewExitError(fmt.Sprintf("Error: init-config: %s", err.Error()), 201)
-	}
-
-	conf := config.Config
-	acc, err := account.GetAccount(rootPath)
-	if err != nil {
-		return cli.NewExitError(fmt.Sprintf("Error: get-account: %s", err.Error()), 202)
-	}
-
-	keyDomain := ctx.String("domain")
-	httpPath := ctx.String("http-path")
-
-	if len(keyDomain) > 0 {
-		domainConf, ok := conf.DomainGroup[keyDomain]
-		if !ok {
-			if len(httpPath) == 0 {
-				return cli.NewExitError(fmt.Sprintf("Error: http-path-empty: %s", err.Error()), 203)
-			}
-
-			domainConf = &config.DomainConfig{
-				Domains:   []string{keyDomain},
-				KeyType:   []certcrypto.KeyType{certcrypto.RSA2048},
-				Challenge: "http-path",
-				Options:   map[string]string{"public": httpPath},
-			}
-		}
-
-		err := client.Run(keyDomain, acc, domainConf)
-		if err != nil {
-			return cli.NewExitError(fmt.Sprintf("Error: run-client: %s", err.Error()), 204)
-		}
-
-		return nil
-	}
-
-	for key, domainConf := range conf.DomainGroup {
-		err := client.Run(key, acc, domainConf)
-		if err != nil {
-			return cli.NewExitError(fmt.Sprintf("Error: run-client: %s", err.Error()), 205)
-		}
-	}
-
-	fmt.Printf("Success: run-client\n")
-	return nil
-}
-
-func renewClient(ctx *cli.Context) error {
-	rootPath := ctx.Parent().String("path")
-
-	err := config.InitConfig(rootPath)
-	if err != nil {
-		return cli.NewExitError(fmt.Sprintf("Error: init-config: %s", err.Error()), 301)
-	}
-
-	conf := config.Config
-
-	acc, err := account.GetAccount(rootPath)
-	if err != nil {
-		return cli.NewExitError(fmt.Sprintf("Error: get-account: %s", err.Error()), 302)
-	}
-
-	keyDomain := ctx.String("domain")
-
-	if len(keyDomain) > 0 {
-		domainConf, ok := conf.DomainGroup[keyDomain]
-		if !ok {
-			return cli.NewExitError(fmt.Sprintf("Error: get-domain-info: %s", err.Error()), 303)
-		}
-
-		err := client.Renew(keyDomain, acc, domainConf)
-		if err != nil {
-			return cli.NewExitError(fmt.Sprintf("Error: run-client: %s", err.Error()), 304)
-		}
-
-		return nil
-	}
-
-	for key, domainConf := range conf.DomainGroup {
-		err := client.Renew(key, acc, domainConf)
-		if err != nil {
-			return cli.NewExitError(fmt.Sprintf("Error: run-client: %s", err.Error()), 305)
-		}
-	}
-
-	fmt.Printf("Success: renew-client\n")
-	return nil
+func versionPrinter(ctx *cli.Context) {
+	buildString := fmt.Sprintf("%s/%s; %s; git:%s", runtime.GOOS, runtime.GOARCH, runtime.Version(), GitHash)
+	buildTime := fmt.Sprintf("build-time: %s", CurrentTime)
+	fmt.Fprintf(ctx.App.Writer, "%s/v%s (%s) %s\n", ctx.App.Name, ctx.App.Version, buildString, buildTime)
 }
