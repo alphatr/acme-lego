@@ -32,15 +32,19 @@ type BaseConf struct {
 var Config BaseConf
 
 func initBaseConfig(conf *baseTOML, configPath string) *errors.Error {
-	Config.Name = "acme-lego"
+	Config.Name = "alphatr-lego"
 	Config.Dev = conf.Dev
 	Config.LogLevel = conf.LogLevel
 	Config.Email = conf.Email
 	Config.HTTPTimeout = 30
 	Config.Expires = time.Duration(conf.ExpireDays) * time.Hour * 24
 	Config.AfterRenew = conf.AfterRenew
-	Config.AcmeURL = common.DefaultString(conf.AcmeURL, defaultAcmeURL)
 	Config.RootDir = common.DefaultString(conf.RootDir, path.Dir(configPath))
+
+	Config.AcmeURL = defaultAcmeURL
+	if conf.Dev {
+		Config.AcmeURL = common.DefaultString(conf.AcmeURL, defaultAcmeURL)
+	}
 
 	types := KeyTypeList(conf.KeyType)
 

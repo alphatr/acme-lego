@@ -99,7 +99,7 @@ func beforeCommand(ctx *cli.Context) error {
 		return cli.NewExitError(err.Error(), 102)
 	}
 
-	config.Config.UserAgent = fmt.Sprintf("alphatr-lego-cli/%s", ctx.App.Version)
+	config.Config.UserAgent = fmt.Sprintf("%s-cli/%s", config.Config.Name, ctx.App.Version)
 	return nil
 }
 
