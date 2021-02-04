@@ -27,23 +27,21 @@ func (cli *Client) SetupChallenge(name string, domain string, conf *config.Domai
 	return nil
 }
 
-func (cli *Client) setProvider(input []chall.ProviderType, provider challenge.Provider) *errors.Error {
-	for _, item := range input {
-		switch item {
-		case chall.ProviderHTTP:
-			if err := cli.lego.Challenge.SetHTTP01Provider(provider); err != nil {
-				return errors.NewError(errors.ModelClientTypeProviderErrno, err, item)
-			}
+func (cli *Client) setProvider(input chall.ProviderType, provider challenge.Provider) *errors.Error {
+	switch input {
+	case chall.ProviderHTTP:
+		if err := cli.lego.Challenge.SetHTTP01Provider(provider); err != nil {
+			return errors.NewError(errors.ModelClientTypeProviderErrno, err, input)
+		}
 
-		case chall.ProviderTLS:
-			if err := cli.lego.Challenge.SetTLSALPN01Provider(provider); err != nil {
-				return errors.NewError(errors.ModelClientTypeProviderErrno, err, item)
-			}
+	case chall.ProviderTLS:
+		if err := cli.lego.Challenge.SetTLSALPN01Provider(provider); err != nil {
+			return errors.NewError(errors.ModelClientTypeProviderErrno, err, input)
+		}
 
-		case chall.ProviderDNS:
-			if err := cli.lego.Challenge.SetDNS01Provider(provider); err != nil {
-				return errors.NewError(errors.ModelClientTypeProviderErrno, err, item)
-			}
+	case chall.ProviderDNS:
+		if err := cli.lego.Challenge.SetDNS01Provider(provider); err != nil {
+			return errors.NewError(errors.ModelClientTypeProviderErrno, err, input)
 		}
 	}
 

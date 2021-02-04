@@ -20,16 +20,22 @@ type HTTPProviderServer struct {
 }
 
 func init() {
-	ProviderMap["http-port"] = &HTTPPortProvider{}
+	ProviderMap["http-port"] = &HTTPPortProvider{isHTTPS: false}
+	ProviderMap["https-port"] = &HTTPPortProvider{isHTTPS: true}
 }
 
 // HTTPPortProvider HTTPPortProvider
 type HTTPPortProvider struct {
+	isHTTPS bool
 }
 
 // Type 返回注册的类型
-func (ins *HTTPPortProvider) Type() []ProviderType {
-	return []ProviderType{ProviderHTTP, ProviderTLS}
+func (ins *HTTPPortProvider) Type() ProviderType {
+	if ins.isHTTPS {
+		return ProviderTLS
+	}
+
+	return ProviderHTTP
 }
 
 // Provider Provider 实体

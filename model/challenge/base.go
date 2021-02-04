@@ -19,7 +19,7 @@ const (
 
 // Provider 解决方案
 type Provider interface {
-	Type() []ProviderType
+	Type() ProviderType
 	Provider(string, *config.DomainConf) (challenge.Provider, *errors.Error)
 }
 

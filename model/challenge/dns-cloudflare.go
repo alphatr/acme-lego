@@ -13,12 +13,11 @@ func init() {
 }
 
 // DNSCloudflareProvider Cloudflare DNS
-type DNSCloudflareProvider struct {
-}
+type DNSCloudflareProvider struct{}
 
 // Type 返回注册的类型
-func (ins *DNSCloudflareProvider) Type() []ProviderType {
-	return []ProviderType{ProviderDNS}
+func (ins *DNSCloudflareProvider) Type() ProviderType {
+	return ProviderDNS
 }
 
 // Provider Provider 实体

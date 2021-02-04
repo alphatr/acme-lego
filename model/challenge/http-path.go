@@ -9,16 +9,22 @@ import (
 )
 
 func init() {
-	ProviderMap["http-path"] = &HTTPPathProvider{}
+	ProviderMap["http-path"] = &HTTPPathProvider{isHTTPS: false}
+	ProviderMap["https-path"] = &HTTPPathProvider{isHTTPS: true}
 }
 
 // HTTPPathProvider HTTPPathProvider
 type HTTPPathProvider struct {
+	isHTTPS bool
 }
 
 // Type 返回注册的类型
-func (ins *HTTPPathProvider) Type() []ProviderType {
-	return []ProviderType{ProviderHTTP, ProviderTLS}
+func (ins *HTTPPathProvider) Type() ProviderType {
+	if ins.isHTTPS {
+		return ProviderTLS
+	}
+
+	return ProviderHTTP
 }
 
 // Provider Provider 实体
