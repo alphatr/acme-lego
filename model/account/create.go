@@ -20,12 +20,12 @@ func CreateAccount(email string, rootDir string) (*Account, *errors.Error) {
 
 	keyPath := path.Join(accountPath, "account.key")
 	if _, err := os.Stat(keyPath); err == nil || os.IsExist(err) {
-		return nil, errors.NewError(errors.CommonFileNotExistErrno, nil, keyPath)
+		return nil, errors.NewError(errors.CommonFileIsExistErrno, nil, keyPath)
 	}
 
 	configPath := path.Join(accountPath, "account.json")
 	if _, err := os.Stat(configPath); err == nil || os.IsExist(err) {
-		return nil, errors.NewError(errors.CommonFileNotExistErrno, nil, configPath)
+		return nil, errors.NewError(errors.CommonFileIsExistErrno, nil, configPath)
 	}
 
 	secret, err := ecdsa.GenerateKey(elliptic.P384(), rand.Reader)

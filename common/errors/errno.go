@@ -17,6 +17,7 @@ const (
 	CommonFileCloseErrno           ErrorNum = 20001005
 	CommonPathAbsErrno             ErrorNum = 20001006
 	CommonMakeDirErrno             ErrorNum = 20001007
+	CommonFileIsExistErrno         ErrorNum = 20001008
 	CommonTOMLUnmarshalErrno       ErrorNum = 20002001
 	CommonJSONUnmarshalErrno       ErrorNum = 20003001
 	CommonJSONMarshalErrno         ErrorNum = 20003002
@@ -70,13 +71,14 @@ const (
 // ErrorMap 错误 Map 列表
 var ErrorMap = map[ErrorNum]ErrorContent{
 	MainInitErrno:                  {"init-error", 0},
-	CommonFileNotExistErrno:        {"file-not-exist: %s", 0},
+	CommonFileNotExistErrno:        {"file-not-exist(%s)", 0},
 	CommonFileCreateErrno:          {"create-file(%s)", 0},
 	CommonFileReadErrno:            {"read-file(%s)", 0},
 	CommonFileWriteErrno:           {"write-file(%s)", 0},
 	CommonFileCloseErrno:           {"close-file(%s)", 0},
 	CommonPathAbsErrno:             {"get-absolute-path(%s)", 0},
 	CommonMakeDirErrno:             {"mkdir(%s)", 0},
+	CommonFileIsExistErrno:         {"file-is-exist(%s)", 0},
 	CommonTOMLUnmarshalErrno:       {"toml-decode", 0},
 	CommonJSONUnmarshalErrno:       {"json-unmarshal", 0},
 	CommonJSONMarshalErrno:         {"json-marshal", 0},
