@@ -1,0 +1,21 @@
+### 基础配置
+email = "acme@example.com" # 用于账户注册的邮箱
+expire-days = 30 # 在临过期多少天执行续签
+
+key-type = ["rsa2048", "ec256"] # 全局支持的证书类型
+challenge = "http-path" # 全局支持的验证方式
+after-renew = "systemctl reload nginx" # 整体续签成功后执行的命令
+
+# 域名配置
+[domain-group."a.example.com"]
+options.public = "/web-path/certificate/acme" # 如果是 http-path 验证，临时文件的位置
+
+[domain-group."b.example.com"]
+domains = ["b1.example.com"] # 支持多个域名申请一个证书, b.example.com 和 b1.example.com 会申请同一个证书
+challenge = "dns-cloudflare" # 针对当前域名的验证方式，覆盖全局配置
+options.token = "y-xxxxxxxxxx-xxxxxxxxxxxxxxxx" # dns-cloudflare 验证的 Token 参数
+
+[domain-group."c.example.com"]
+key-type = ["ec256"] # 针对当前域名的证书类型，覆盖全局配置
+challenge = "http-port" # 针对当前域名的验证方式，覆盖全局配置
+options.server = ":8013" # http-port 验证的服务器监听端口

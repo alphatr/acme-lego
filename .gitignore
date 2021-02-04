@@ -1,6 +1,6 @@
 vendor/
 test/
-/config/
+/config/*
 !config/config.template.toml
 /acme-lego
 /version.go
