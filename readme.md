@@ -2,6 +2,11 @@
 
 Go 版本 ACME 客户端，支持 ACMEv2 协议，支持 ECC 证书，支持泛域名证书
 
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/alphatr/acme-lego?label=acme-lego&style=flat-square)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/alphatr/acme-lego/Build-Release?style=flat-square)
+![GitHub](https://img.shields.io/github/license/alphatr/acme-lego?style=flat-square)
+![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/alphatr/acme-lego?style=flat-square)
+
 验证方式支持 HTTP/HTTPS 文件路径，HTTP/HTTPS 端口转发，DNS 验证（泛域名证书）
 
 ### 开始使用
