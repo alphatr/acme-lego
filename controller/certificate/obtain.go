@@ -78,13 +78,13 @@ func obtainDomain(domain string, cli *client.Client, conf *config.DomainConf) *e
 			return errors.NewError(errors.ConCertGenerateKeyErrno, err, keyType)
 		}
 
-		cert, errs := cli.CertificateObtain(conf.Domains, secret)
-		if errs != nil {
-			return errors.NewError(errors.ConCertObtainErrno, errs, domain, keyType)
+		cert, err := cli.CertificateObtain(conf.Domains, secret)
+		if err != nil {
+			return errors.NewError(errors.ConCertObtainErrno, err, domain, keyType)
 		}
 
 		certPath := path.Join(config.Config.RootDir, "certificates", domain)
-		if err = checkFolder(certPath); err != nil {
+		if err := checkFolder(certPath); err != nil {
 			return errors.NewError(errors.ConCertCheckFolderErrno, err, domain)
 		}
 

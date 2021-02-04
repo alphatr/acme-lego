@@ -50,6 +50,7 @@ const (
 	ConCertSaveCertErrno           ErrorNum = 30301007
 	ConCertRunAfterRenewErrno      ErrorNum = 30301008
 	ConCertLoadPrivateErrno        ErrorNum = 30301009
+	ConCertRenewIgnoreErrno        ErrorNum = 30301010
 	ModelClientInitErrno           ErrorNum = 40101001
 	ModelClientRegisterErrno       ErrorNum = 40101002
 	ModelClientObtainErrno         ErrorNum = 40101003
@@ -111,6 +112,7 @@ var ErrorMap = map[ErrorNum]ErrorContent{
 	ConCertSaveCertErrno:           {"save-certificate(%s, %s)", 0},
 	ConCertRunAfterRenewErrno:      {"run-after-renew", 0},
 	ConCertLoadPrivateErrno:        {"load-private-key", 0},
+	ConCertRenewIgnoreErrno:        {"renew-ignore", 0},
 	ModelClientInitErrno:           {"init-client", 0},
 	ModelClientRegisterErrno:       {"register-account", 0},
 	ModelClientObtainErrno:         {"obtain-certificate", 0},

@@ -30,6 +30,7 @@ func Renew(ctx *cli.Context) error {
 		return cli.NewExitError(err.Error(), 402)
 	}
 
+	hasRenewSuccess := false
 	domain := ctx.String("domain")
 
 	if len(domain) > 0 {
@@ -40,6 +41,10 @@ func Renew(ctx *cli.Context) error {
 		}
 
 		if err := renewDomain(domain, lego, conf); err != nil {
+			if err.Content.Errno == errors.ConCertRenewIgnoreErrno {
+				return nil
+			}
+
 			err := errors.NewError(errors.ConCertRenewDomainErrno, err, domain)
 			return cli.NewExitError(err.Error(), 404)
 		}
@@ -48,21 +53,28 @@ func Renew(ctx *cli.Context) error {
 	} else {
 		for domain, conf := range config.Config.DomainGroup {
 			if err := renewDomain(domain, lego, conf); err != nil {
+				if err.Content.Errno == errors.ConCertRenewIgnoreErrno {
+					continue
+				}
+
 				err := errors.NewError(errors.ConCertRenewDomainErrno, err, domain)
 				return cli.NewExitError(err.Error(), 404)
 			}
 
+			hasRenewSuccess = true
 			bootstrap.Log.Infof("[success] renew-certificate: %s\n", domain)
 		}
 	}
 
-	if len(config.Config.AfterRenew) > 0 {
+	if len(config.Config.AfterRenew) > 0 && hasRenewSuccess {
 		result, err := common.RunCommand(config.Config.AfterRenew)
 		if err != nil {
 			return errors.NewError(errors.ConCertRunAfterRenewErrno, err)
 		}
 
-		bootstrap.Log.Debugf("after-renew: %s\n", result)
+		if result != "" {
+			bootstrap.Log.Debugf("after-renew-output: %s", result)
+		}
 	}
 
 	return nil
@@ -88,8 +100,8 @@ func renewDomain(domain string, cli *client.Client, conf *config.DomainConf) *er
 		}
 
 		if cert.NotAfter.After(time.Now().Add(config.Config.Expires)) {
-			bootstrap.Log.Debugf("cert-not-expires(%s)", domain)
-			return nil
+			bootstrap.Log.Debugf("ignore-cert-renew: %s", domain)
+			return errors.NewError(errors.ConCertRenewIgnoreErrno, nil)
 		}
 
 		privateKey, err := common.LoadPrivateKey(files.Prev)
@@ -97,9 +109,9 @@ func renewDomain(domain string, cli *client.Client, conf *config.DomainConf) *er
 			return errors.NewError(errors.ConCertLoadPrivateErrno, err, domain, keyType)
 		}
 
-		newCert, errs := cli.CertificateObtain(conf.Domains, privateKey)
-		if errs != nil {
-			return errors.NewError(errors.ConCertObtainErrno, errs, domain, keyType)
+		newCert, err := cli.CertificateObtain(conf.Domains, privateKey)
+		if err != nil {
+			return errors.NewError(errors.ConCertObtainErrno, err, domain, keyType)
 		}
 
 		if err := checkFolder(certPath); err != nil {
