@@ -18,9 +18,13 @@ const (
 	defaultConfigPath string = "/etc/lego/config.toml"
 )
 
+type errWriter struct{}
+
 func main() {
-	app := cli.NewApp()
 	cli.VersionPrinter = versionPrinter
+	cli.ErrWriter = &errWriter{}
+
+	app := cli.NewApp()
 	app.Version = GitVersionTag
 	app.Name = "lego"
 	app.Usage = "A Let's Encrypt Client"
@@ -107,4 +111,9 @@ func versionPrinter(ctx *cli.Context) {
 	buildString := fmt.Sprintf("%s/%s; %s; git:%s", runtime.GOOS, runtime.GOARCH, runtime.Version(), GitHash)
 	buildTime := fmt.Sprintf("build-time: %s", CurrentTime)
 	fmt.Fprintf(ctx.App.Writer, "%s/v%s (%s) %s\n", ctx.App.Name, ctx.App.Version, buildString, buildTime)
+}
+
+func (ins *errWriter) Write(input []byte) (int, error) {
+	bootstrap.Log.Error(string(input))
+	return len(input), nil
 }
