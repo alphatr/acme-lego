@@ -76,6 +76,7 @@ func (s *HTTPProviderServer) CleanUp(domain, token, keyAuth string) error {
 	if s.listener == nil {
 		return nil
 	}
+
 	s.listener.Close()
 	<-s.done
 	return nil

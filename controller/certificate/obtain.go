@@ -73,9 +73,9 @@ func obtainDomain(domain string, cli *client.Client, conf *config.DomainConf) *e
 			return errors.NewError(errors.ConCertSetupChallengeErrno, err)
 		}
 
-		secret, err := certcrypto.GeneratePrivateKey(keyType)
-		if err != nil {
-			return errors.NewError(errors.ConCertGenerateKeyErrno, err, keyType)
+		secret, errs := certcrypto.GeneratePrivateKey(keyType)
+		if errs != nil {
+			return errors.NewError(errors.ConCertGenerateKeyErrno, errs, keyType)
 		}
 
 		cert, err := cli.CertificateObtain(conf.Domains, secret)
