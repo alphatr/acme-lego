@@ -23,7 +23,7 @@ func (ins *HTTPPathProvider) Type() []ProviderType {
 
 // Provider Provider 实体
 func (ins *HTTPPathProvider) Provider(domain string, conf *config.DomainConf) (challenge.Provider, *errors.Error) {
-	provider, err := webroot.NewHTTPProvider(conf.Options["http-path"])
+	provider, err := webroot.NewHTTPProvider(conf.Options["public"])
 	if err != nil {
 		return nil, errors.NewError(errors.ModelChalHTTPInitErrno, err)
 	}
