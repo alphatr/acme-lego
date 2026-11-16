@@ -14,7 +14,7 @@ func (cli *Client) CertificateObtain(domains []string, secret crypto.PrivateKey)
 		Domains:    domains,
 		PrivateKey: secret,
 		Bundle:     true,
-		MustStaple: true,
+		MustStaple: false,
 	}
 
 	cert, errs := cli.lego.Certificate.Obtain(request)
